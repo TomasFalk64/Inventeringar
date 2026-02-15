@@ -74,10 +74,31 @@ function uppdateraSksLager() {
                     const inkom = new Date(feature.properties.Inkomdatum);
                     return inkom >= gransDatum;
                 },
-                style: {
-                    color: '#e67e22', 
-                    weight: 2,
-                    fillOpacity: 0.3
+                style: function(feature) {
+                    const inkom = new Date(feature.properties.Inkomdatum);
+                    const idag = new Date();
+                    
+                    // Räkna ut tidsskillnaden i millisekunder och gör om till veckor
+                    // 1000ms * 60s * 60m * 24h * 7d = 1 vecka
+                    const diffIVeckor = (idag - inkom) / (1000 * 60 * 60 * 24 * 7);
+
+                    if (diffIVeckor <= 6) {
+                        // Nyare än 6 veckor = Röd
+                        return {
+                            color: '#e74c3c', 
+                            weight: 3,        // Lite tjockare linje för att synas bättre
+                            fillOpacity: 0.4,
+                            fillColor: '#e74c3c'
+                        };
+                    } else {
+                        // Äldre än 6 veckor = Orange
+                        return {
+                            color: '#e67e22',
+                            weight: 2,
+                            fillOpacity: 0.2,
+                            fillColor: '#e67e22'
+                        };
+                    }
                 },
                 onEachFeature: onEachFeature 
             }).addTo(map);
