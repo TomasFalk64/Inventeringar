@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skogsinventering - Webbkarta</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">🌲 Föreningens Skogskarta</div>
+        <div id="coords">Koordinater: -</div>
+    </header>
+
+    <div id="main-container">
+        <aside id="sidebar">
+            <div id="controls">
+                <h3>Inställningar</h3>
+                <label><input type="checkbox" id="layer-sks" checked> Avverkningsanmälningar</label><br>
+                <label><input type="checkbox" id="layer-egna" checked> Egna inventeringar</label><br>
+                <label><input type="checkbox" id="layer-arter"> Visa artpunkter</label>
+                <hr>
+                <h3>Bakgrund</h3>
+                <select id="basemap-select">
+                    <option value="topo">Topografisk Karta</option>
+                    <option value="sat">Flygfoto</option>
+                </select>
+            </div>
+
+            <div id="info-panel">
+                <div id="placeholder-text">Klicka på ett område på kartan för att se detaljer.</div>
+                <div id="data-content" style="display:none;">
+                    <h2 id="info-title">Huvudområde</h2>
+                    <div class="badge" id="info-status">Status</div>
+                    <p><strong>Diarienummer:</strong> <span id="info-dnr">-</span></p>
+                    <p><strong>Naturtyp:</strong> <span id="info-natur">-</span></p>
+                    <p><strong>Beslut/Info:</strong></p>
+                    <div id="info-comment" class="comment-box"></div>
+                    <a id="info-link" href="#" target="_blank" class="button">Öppna dokumentmapp</a>
+                </div>
+            </div>
+        </aside>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
