@@ -1,3 +1,31 @@
+let masterData = [];
+
+// Byt ut denna mot din riktiga CSV-länk från Google (Arkiv -> Dela -> Publicera på webben -> CSV)
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoJz7Pap7O0UQqtmPWNeZ8M3MmNVkcLC8tkw8PjTufkZkKq-74wH2HuwqcTQfN20be77kNkoy-rrLh/pub?output=csv';
+
+function laddaMasterSheet() {
+    // Kontrollera om Papa faktiskt har laddats
+    if (typeof Papa === 'undefined') {
+        console.log("PapaParse inte redo än, väntar 500ms...");
+        setTimeout(laddaMasterSheet, 500); // Försök igen om en halv sekund
+        return;
+    }
+
+    Papa.parse(csvUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            masterData = results.data;
+            console.log("Master Sheet laddat!", masterData.length, "rader hittades.");
+        },
+        error: function(err) {
+            console.error("Fel vid PapaParse:", err);
+        }
+    });
+}
+
+
 // 1. Initiera kartan (Uppsala som startpunkt)
 const map = L.map('map').setView([59.8585, 17.6389], 11);
 
@@ -22,26 +50,71 @@ document.getElementById('layer-arter').addEventListener('change', function(e) {
     }
 });
 
-// 7. Funktionen som hanterar klick på anmälningar
+// 7. Funktion som hanterar klick på anmälningar
 function onEachFeature(feature, layer) {
     layer.on('click', function (e) {
         const p = feature.properties;
+        const match = masterData.find(row => row.Diarienummer === p.Beteckn);
+
+        // Hämta elementen
+        const titleEl = document.getElementById('info-title');
+        const badgeContainer = document.getElementById('badge-container'); // Den nya containern
+        const dnrEl = document.getElementById('info-dnr');
+        const naturEl = document.getElementById('info-natur');
+        const commentEl = document.getElementById('info-comment');
+
         document.getElementById('placeholder-text').style.display = 'none';
         document.getElementById('data-content').style.display = 'block';
 
-        document.getElementById('info-title').innerText = p.Beteckn || "Namn saknas";
-        document.getElementById('info-dnr').innerText = p.Beteckn;
-        document.getElementById('info-status').innerText = p.ArendeStatus || "Anmäld";
+        // Töm alltid badge-containern först
+        badgeContainer.innerHTML = '';
+
+        if (match) {
+            titleEl.innerText = match["Trivialnamn på skog"] || p.Beteckn;
+            
+            // Lägg till badges i containern
+            const statusColor = match.Status.includes('Överklagad') ? '#e74c3c' : '#e67e22';
+            badgeContainer.innerHTML += `<span class="badge" style="background-color: ${statusColor}">${match.Status}</span>`;
+            
+            if (match["Tillfälligt förbud"]) {
+                badgeContainer.innerHTML += `<span class="badge" style="background-color: #8e44ad;">${match["Tillfälligt förbud"]}</span>`;
+            }
+            if (match["Prioritet"]) {
+                badgeContainer.innerHTML += `<span class="badge" style="background-color: #2c3e50;">${match["Prioritet"]}</span>`;
+            }
+            
+            dnrEl.innerText = p.Beteckn;
+            naturEl.innerText = match["Prioriterade arter"] || "Ej angivet";
+            
+            commentEl.innerHTML = `
+                <div style="background: #f4f4f4; padding: 12px; border-radius: 8px; border-left: 4px solid #e67e22; margin-top: 10px; font-size: 0.95em;">
+                    <p style="margin: 0 0 8px 0;"><strong>Fastighet:</strong> ${match["Fastighet"] || p.Kommun}</p>
+                    <p style="margin: 0 0 8px 0;"><strong>Nästa steg:</strong> ${match["Nästa steg"] || "Inga planerade åtgärder"}</p>
+                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                    <p style="margin: 0;"><strong>Övriga kommentarer:</strong><br>
+                    <span style="color: #444;">${match["Övriga kommentarer"] || "Inga anteckningar."}</span></p>
+                </div>
+            `;
+        } else {
+        // --- VY FÖR ÄRENDEN UTAN MATCH ---
+            titleEl.innerText = p.Beteckn;
+            badgeContainer.innerHTML = `<span class="badge" style="background-color: #95a5a6">Ej i arkiv</span>`;
+            
+            dnrEl.innerText = p.Beteckn;
+            naturEl.innerText = p.Skogstyp;
+            
+            commentEl.innerHTML = `
+                <div style="margin-top: 15px">
+                    <ul style="list-style: none; padding: 0; font-size: 0.9em; color: #555;">
+                        <li><b>Typ:</b> ${p.Avverktyp || "Uppgift saknas"}</li>
+                        <li><b>Areal:</b> ${p.AnmaldHa} ha</li>
+                        <li><b>Inkom:</b> ${p.Inkomdatum ? p.Inkomdatum.split('T')[0] : "-"}</li>
+                        <li><b>Status:</b> ${p.ArendeStatus}</li>
+                    </ul>
+                </div>
+            `;
+        }
         
-        const infoText = `
-            <b>Typ:</b> ${p.Avverktyp}<br>
-            <b>Ändamål:</b> ${p.Andamal}<br>
-            <b>Areal:</b> ${p.AnmaldHa} ha<br>
-            <b>Inkom:</b> ${p.Inkomdatum}
-        `;
-        document.getElementById('info-comment').innerHTML = infoText;
-        
-        // Stoppa klicket från att gå igenom till kartan under
         L.DomEvent.stopPropagation(e);
     });
 }
@@ -112,4 +185,8 @@ document.getElementById('weeks-input').addEventListener('input', () => {
     if (document.getElementById('layer-sks').checked) {
         uppdateraSksLager();
     }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    laddaMasterSheet();
 });

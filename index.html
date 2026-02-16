@@ -20,11 +20,11 @@
                 <h3>Inställningar</h3>
                 <div class="control-group sks-container">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="layer-sks"> Avverkningsanmälningar
+                        <input type="checkbox" id="layer-sks" > Avverkningsanmälningar
                     </label>
                     <div class="weeks-row">
                         <span>Visa senaste:</span>
-                        <input type="number" id="weeks-input" value="6" min="1">
+                        <input type="number" id="weeks-input" value="12" min="1">
                         <span>veckor</span>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                 <div id="placeholder-text">Klicka på ett område på kartan för att se detaljer.</div>
                 <div id="data-content" style="display:none;">
                     <h2 id="info-title">Huvudområde</h2>
-                    <div class="badge" id="info-status">Status</div>
+                    <div id="badge-container" style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;"></div>
                     <p><strong>Diarienummer:</strong> <span id="info-dnr">-</span></p>
                     <p><strong>Naturtyp:</strong> <span id="info-natur">-</span></p>
                     <p><strong>Beslut/Info:</strong></p>
@@ -57,6 +57,9 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="script.js"></script>
+
+
 </body>
 </html>
