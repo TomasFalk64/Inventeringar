@@ -1,4 +1,7 @@
 let masterData = [];
+let anmalningarLayer; 
+let masterCircles = L.layerGroup(); // En grupp för alla prioriterings-cirklar
+
 
 // Byt ut denna mot din riktiga CSV-länk från Google (Arkiv -> Dela -> Publicera på webben -> CSV)
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoJz7Pap7O0UQqtmPWNeZ8M3MmNVkcLC8tkw8PjTufkZkKq-74wH2HuwqcTQfN20be77kNkoy-rrLh/pub?output=csv';
@@ -31,6 +34,7 @@ function laddaMasterSheet() {
 
 // 1. Initiera kartan (Uppsala som startpunkt)
 const map = L.map('map').setView([59.8585, 17.6389], 11);
+masterCircles.addTo(map);
 
 // 2. Definiera bakgrundskartor (Använder OpenStreetMap som placeholder för Lantmäteriet)
 const topoLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -73,7 +77,7 @@ function onEachFeature(feature, layer) {
         badgeContainer.innerHTML = '';
 
         if (match) {
-            titleEl.innerText = match["Trivialnamn på skog"] || p.Beteckn;
+            titleEl.innerText = p.Beteckn;
             
             // Lägg till badges i containern
             const statusColor = match.Status.includes('Överklagad') ? '#e74c3c' : '#e67e22';
@@ -86,7 +90,7 @@ function onEachFeature(feature, layer) {
                 badgeContainer.innerHTML += `<span class="badge" style="background-color: #2c3e50;">${match["Prioritet"]}</span>`;
             }
             
-            dnrEl.innerText = p.Beteckn;
+            dnrEl.innerText = match["Trivialnamn på skog"] || p.Beteckn;
             naturEl.innerText = match["Prioriterade arter"] || "Ej angivet";
             
             commentEl.innerHTML = `
@@ -103,7 +107,7 @@ function onEachFeature(feature, layer) {
             titleEl.innerText = p.Beteckn;
             badgeContainer.innerHTML = `<span class="badge" style="background-color: #95a5a6">Ej i arkiv</span>`;
             
-            dnrEl.innerText = p.Beteckn;
+            dnrEl.innerText = p.ArendeStatus;
             naturEl.innerText = p.Skogstyp;
             
             commentEl.innerHTML = `
@@ -120,6 +124,32 @@ function onEachFeature(feature, layer) {
         
         L.DomEvent.stopPropagation(e);
     });
+
+    // Uppdatera cirklar i master-områden
+    const dnr = feature.properties.Beteckn;
+    const match = masterData.find(row => row.Diarienummer === dnr);
+
+    if (match) {
+        // Räkna ut mitten på polygonen
+        const bounds = layer.getBounds();
+        const center = bounds.getCenter();
+
+        // Skapa en cirkel-marker
+        const farg = getPrioritetsFarg(dnr);
+        const circle = L.circleMarker(center, {
+            radius: 10,           // Storleken på cirkeln (fast i pixlar)
+            fillColor: farg,
+            color: farg,        // Vit ram runt cirkeln
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9,
+            interactive: false    // Gör så att man klickar "igenom" cirkeln ner till polygonen
+        });
+
+        circle.addTo(masterCircles);
+    }
+
+
 }
 
 // 8. Logik för att ladda och filtrera Skogsstyrelsens lager
@@ -140,7 +170,7 @@ function getPrioritetsFarg(dnr) {
 }
 
 
-let anmalningarLayer; 
+
 
 function uppdateraSksLager() {
     const checkbox = document.getElementById('layer-sks');
