@@ -18,6 +18,9 @@ function laddaMasterSheet() {
         complete: function(results) {
             masterData = results.data;
             console.log("Master Sheet laddat!", masterData.length, "rader hittades.");
+            if (document.getElementById('layer-sks').checked) {
+                uppdateraSksLager();
+            }
         },
         error: function(err) {
             console.error("Fel vid PapaParse:", err);
@@ -120,16 +123,33 @@ function onEachFeature(feature, layer) {
 }
 
 // 8. Logik för att ladda och filtrera Skogsstyrelsens lager
+function getPrioritetsFarg(dnr) {
+    // Leta efter polygonens dnr i masterData
+    const match = masterData.find(row => row.Diarienummer === dnr);
+    
+    if (!match) return null; // Ingen match = använd standardfärg (orange/röd)
+
+    // Bestäm färg baserat på Prioritet-kolumnen
+    const prio = (match.Prioritet || "").toLowerCase();
+    
+    if (prio.includes("hög")) return "#c0392b";   // Mörkröd
+    if (prio.includes("mellan")) return "#f1c40f"; // Stark gul
+    if (prio.includes("låg")) return "#27ae60";    // Grön
+    
+    return "#3498db"; // Blå om den finns i master men saknar prio-värde
+}
+
+
 let anmalningarLayer; 
 
 function uppdateraSksLager() {
     const checkbox = document.getElementById('layer-sks');
-    const inputField = document.getElementById('weeks-input');
-    const veckor = parseInt(inputField.value) || 0;
+    const veckor = parseInt(document.getElementById('weeks-input').value) || 0;
 
-    // Rensa gammalt lager
+    // Rensa gammalt
     if (anmalningarLayer) {
         map.removeLayer(anmalningarLayer);
+        anmalningarLayer = null; // Viktigt: nollställ variabeln
     }
 
     // Om inte ikryssad eller 0 veckor, rita inget mer
@@ -139,44 +159,58 @@ function uppdateraSksLager() {
         .then(response => response.json())
         .then(data => {
             const gransDatum = new Date();
-            gransDatum.setDate(gransDatum.getDate() - (veckor * 7));
+            gransDatum.setDate(gransDatum.getDate() - (parseInt(document.getElementById('weeks-input').value) * 7));
 
             anmalningarLayer = L.geoJSON(data, {
                 filter: function(feature) {
-                    if (!feature.properties.Inkomdatum) return false;
-                    const inkom = new Date(feature.properties.Inkomdatum);
-                    return inkom >= gransDatum;
+                    const dnr = feature.properties.Beteckn;
+                    const inkomDatumStr = feature.properties.Inkomdatum;
+                    
+                    // 1. Kolla om den finns i Master Sheet
+                    const finnsIMaster = masterData.some(row => row.Diarienummer === dnr);
+                    
+                    // 2. Om den finns i Master - VISA ALLTID
+                    if (finnsIMaster) return true;
+
+                    // 3. Om den INTE finns i Master - Kolla vecko-filtret
+                    if (!inkomDatumStr) return false; 
+                    
+                    const inkom = new Date(inkomDatumStr);
+                    const nuvarandeVeckoGrans = new Date();
+                    nuvarandeVeckoGrans.setDate(nuvarandeVeckoGrans.getDate() - (veckor * 7));
+
+                    // Visa endast om datumet är efter gränsen
+                    return inkom >= nuvarandeVeckoGrans;
                 },
                 style: function(feature) {
-                    const inkom = new Date(feature.properties.Inkomdatum);
-                    const idag = new Date();
+                    const dnr = feature.properties.Beteckn;
+                    const masterFarg = getPrioritetsFarg(dnr);
                     
-                    // Räkna ut tidsskillnaden i millisekunder och gör om till veckor
-                    // 1000ms * 60s * 60m * 24h * 7d = 1 vecka
-                    const diffIVeckor = (idag - inkom) / (1000 * 60 * 60 * 24 * 7);
-
-                    if (diffIVeckor <= 6) {
-                        // Nyare än 6 veckor = Röd
+                    if (masterFarg) {
+                        // OM DEN FINNS I MASTER - lys med prioritetsfärg
                         return {
-                            color: '#e74c3c', 
-                            weight: 3,        // Lite tjockare linje för att synas bättre
-                            fillOpacity: 0.4,
-                            fillColor: '#e74c3c'
+                            color: masterFarg,
+                            weight: 4,         // Tjockare linje för "våra" områden
+                            fillOpacity: 0.6,
+                            fillColor: masterFarg
                         };
                     } else {
-                        // Äldre än 6 veckor = Orange
+                        // STANDARDVY (Myndighetsdata)
+                        const inkom = new Date(feature.properties.Inkomdatum);
+                        const diffIVeckor = (new Date() - inkom) / (1000 * 60 * 60 * 24 * 7);
+                        const farg = diffIVeckor <= 6 ? '#e74c3c' : '#e67e22';
+                        
                         return {
-                            color: '#e67e22',
-                            weight: 2,
-                            fillOpacity: 0.2,
-                            fillColor: '#e67e22'
+                            color: farg,
+                            weight: 1,
+                            fillOpacity: 0.1, // Svagare fyllning för områden vi inte kollat
+                            fillColor: farg
                         };
                     }
                 },
                 onEachFeature: onEachFeature 
             }).addTo(map);
-        })
-        .catch(err => console.error("Kunde inte läsa GeoJSON:", err));
+        });
 }
 
 // Lyssnare för kontroller
