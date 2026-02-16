@@ -60,13 +60,13 @@ function uppdateraKartan() {
                         
                         // Om yngre än 6 veckor (42 dagar) -> Starkare röd
                         // Annars -> Orange
-                        const farg = diffDagar <= 42 ? '#e74c3c' : '#e67e22';
+                        const farg = diffDagar <= 42 ? '#e4200a' : '#e67e22';
                         
                         return { 
                             color: farg, 
                             weight: 2, 
-                            opacity: 0.9,
-                            fillOpacity: 0.4, 
+                            opacity: 1,
+                            fillOpacity: 0.5, 
                             fillColor: farg 
                         };
                     },
@@ -309,6 +309,121 @@ function getPrioritetsFarg(dnr) {
     return "#3498db"; // Blå om den finns i master men saknar prio-värde
 }
 
+function utforSokning() {
+    const term = document.getElementById('map-search').value.toLowerCase().trim();
+    if (term.length < 2) return;
+
+    let hittatObjekt = null;
+    let hittatLager = null;
+
+    // 1. Leta först i MasterData (för Trivialnamn och Diarienummer)
+    const matchIMaster = masterData.find(row => 
+        (row.Diarienummer && row.Diarienummer.toLowerCase().includes(term)) || 
+        (row["Trivialnamn på skog"] && row["Trivialnamn på skog"].toLowerCase().includes(term))
+    );
+
+    // 2. Matcha mot lagren på kartan
+    // Vi kollar alla lager i de grupper vi har (Master, SKS, Egna)
+    const allaLager = [masterLayer, anmalningarLayer, egnaOmradenLayer];
+    
+    allaLager.forEach(group => {
+        if (!group) return;
+        group.eachLayer(layer => {
+            const p = layer.feature.properties;
+            const id = (p.Beteckn || p.Diarienummer || p.id || "").toLowerCase();
+            
+            // Om vi hittade en match i Master ovan, leta efter det lagret
+            if (matchIMaster && id === matchIMaster.Diarienummer.toLowerCase()) {
+                hittatLager = layer;
+            } 
+            // Annars, kolla om söktermen matchar id:t direkt (för SKS-anmälningar utanför Master)
+            else if (id.includes(term) && !hittatLager) {
+                hittatLager = layer;
+            }
+        });
+    });
+
+    if (hittatLager) {
+        const bounds = hittatLager.getBounds();
+        map.fitBounds(bounds, { maxZoom: 16 });
+        
+        // Öppna infopanelen
+        hittatLager.fire('click');
+
+        // Gör en visuell markering (blink)
+        hittatLager.setStyle({ weight: 10, color: 'yellow' });
+        setTimeout(() => {
+            // Återställ stil (detta antar att du har kvar din style-logik)
+            if (hittatLager === masterLayer) {
+                 // Här kan du behöva anropa din befintliga style-funktion för att återställa
+                 uppdateraKartan(); 
+            } else {
+                 uppdateraKartan();
+            }
+        }, 1500);
+    } else {
+        alert("Hittade inget område som matchar: " + term);
+    }
+}
+
+
+const legendControl = L.control({ position: 'topright' });
+
+legendControl.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'map-legend');
+    
+    // Header med minimera-knapp
+    div.innerHTML = `
+        <div class="legend-header" id="legend-toggle">
+            <span>Teckenförklaring</span>
+            <span id="legend-icon">−</span>
+        </div>
+        <div id="legend-body" class="legend-content">
+            <hr style="margin: 5px 0; border: 0; border-top: 1px solid #eee;">
+            <div class="legend-item"><div class="legend-color" style="background: rgba(142,68,173,0.3); border-color: #8e44ad;"></div> Egen inventering</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(231,76,60,0.4); border-color: #e74c3c;"></div> Ny anmälan (&lt;6v)</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(230,126,34,0.4); border-color: #e67e22;"></div> Äldre anmälan (&gt;6v)</div>
+            
+            <div style="font-weight: bold; margin-top: 8px; font-size: 11px; color: #666;">PUNKTER (Status)</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #c0392b;"></div> Hög prioritet</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #f1c40f;"></div> Mellanprioritet</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #27ae60;"></div> Låg prioritet</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #8e44ad; border: 3px solid #c0392b; width: 8px; height: 8px;"></div> Eget område hög prio</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #8e44ad; border: 3px solid #27ae60; width: 8px; height: 8px;"></div> Eget område låg prio</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #c0392b; border: 2px solid black;"></div> ⚠️ Åtgärd krävs</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #c0392b; border: 2px solid white;"></div> ⚠️ Deadline nära</div>
+        </div>
+    `;
+
+    // Gör den klickbar för att minimera
+    L.DomEvent.disableClickPropagation(div); // Hindrar att kartan zoomar när man klickar i rutan
+    
+    div.querySelector('#legend-toggle').onclick = function() {
+        const body = div.querySelector('#legend-body');
+        const icon = div.querySelector('#legend-icon');
+        if (body.classList.contains('minimized')) {
+            body.classList.remove('minimized');
+            icon.innerText = '−';
+        } else {
+            body.classList.add('minimized');
+            icon.innerText = '+';
+        }
+    };
+
+    return div;
+};
+
+legendControl.addTo(map);
+
+
+
+// Koppla till både knapptryck och Enter-tangent
+document.getElementById('search-btn').addEventListener('click', utforSokning);
+document.getElementById('map-search').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        utforSokning();
+    }
+});
 
 // Skapa satellitlagret som en variabel så vi kan hålla koll på det
 const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -341,3 +456,4 @@ document.getElementById('layer-egne').addEventListener('change', function(e) {
     }
     uppdateraKartan(); 
 });
+

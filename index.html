@@ -17,7 +17,12 @@
     <div id="main-container">
         <aside id="sidebar">
             <div id="controls">
-                <h3>Lager</h3>
+               
+                <div class="search-container" style="margin-bottom: 15px; display: flex; gap: 5px;">
+                    <input type="text" id="map-search" placeholder="Sök diarienr eller namn..." 
+                        style="flex-grow: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <button id="search-btn" style="padding: 8px 15px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 4px;">🔍</button>
+                </div>
                 
                 <div class="control-group">
                     <label class="checkbox-label">
@@ -48,7 +53,7 @@
                 </label>
 
                 <hr>
-                <h3>Bakgrund</h3>
+            
                 <select id="basemap-select">
                     <option value="topo">Topografisk Karta</option>
                     <option value="sat">Flygfoto</option>
