@@ -180,7 +180,7 @@ function ritaPrioritetsCirkel(feature, layer, isEget = false) {
                 const marginal = new Date();
                 marginal.setDate(idag.getDate() + 7);
                 if (deadline <= marginal) {
-                    varningsKant = "#ffffff";
+                    varningsKant = "#888888";
                     kantBredd = 5;
                 }
             }
@@ -380,18 +380,25 @@ legendControl.onAdd = function (map) {
         </div>
         <div id="legend-body" class="legend-content">
             <hr style="margin: 5px 0; border: 0; border-top: 1px solid #eee;">
-            <div class="legend-item"><div class="legend-color" style="background: rgba(142,68,173,0.3); border-color: #8e44ad;"></div> Egen inventering</div>
-            <div class="legend-item"><div class="legend-color" style="background: rgba(231,76,60,0.4); border-color: #e74c3c;"></div> Ny anmälan (&lt;6v)</div>
-            <div class="legend-item"><div class="legend-color" style="background: rgba(230,126,34,0.4); border-color: #e67e22;"></div> Äldre anmälan (&gt;6v)</div>
             
-            <div style="font-weight: bold; margin-top: 8px; font-size: 11px; color: #666;">PUNKTER (Status)</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #c0392b;"></div> Hög prioritet</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #f1c40f;"></div> Mellanprioritet</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #27ae60;"></div> Låg prioritet</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #8e44ad; border: 3px solid #c0392b; width: 8px; height: 8px;"></div> Eget område hög prio</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #8e44ad; border: 3px solid #27ae60; width: 8px; height: 8px;"></div> Eget område låg prio</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #c0392b; border: 2px solid black;"></div> ⚠️ Åtgärd krävs</div>
-            <div class="legend-item"><div class="legend-circle" style="background: #c0392b; border: 2px solid white;"></div> ⚠️ Deadline nära</div>
+            <div style="font-weight: bold; margin: 8px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Avverkning SKS</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(231,76,60,0.4); border-color: #e74c3c;"></div> Nyare än 6 veckor</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(230,126,34,0.4); border-color: #e67e22;"></div> Äldre än 6 veckor</div>
+
+            <div style="font-weight: bold; margin: 12px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Prioritering</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 5px;">
+                <div class="legend-item"><div class="legend-circle" style="background: #c0392b;"></div> Hög</div>
+                <div class="legend-item"><div class="legend-circle" style="background: #f1c40f;"></div> Mellan</div>
+                <div class="legend-item"><div class="legend-circle" style="background: #27ae60;"></div> Låg</div>
+                <div class="legend-item"><div class="legend-circle" style="background: #3498db;"></div> Ingen</div>
+            </div>
+            <div class="legend-item"><div class="legend-circle" style="background: rgba(93, 18, 126, 0.6); border: 2px #8e44ad;"></div> Egen inventering</div>
+
+            <div style="font-weight: bold; margin: 12px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Varningar & Deadlines</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #ffff; border: 3px solid black;"></div> ⚠️ Åtgärd krävs</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #ffff; border: 3px solid grey;"></div> ⚠️ Deadline nära (7 dagar)</div>
+            
+            </div>
         </div>
     `;
 
