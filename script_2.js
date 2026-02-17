@@ -38,74 +38,96 @@ function laddaMasterSheet() {
 
 // --- HUVUDFUNKTION FÖR KARTAN ---
 function uppdateraKartan() {
+    // 1. Hämta status från kontrollpanelen
     const visaArende = document.getElementById('check-typ-arende').checked;
-    const visaEgen = document.getElementById('check-typ-egen').checked;
+    const visaEgenHuvud = document.getElementById('check-typ-egen').checked;
     const visaSks = document.getElementById('layer-sks').checked;
-    const antalVeckor = document.getElementById('weeks-input').value;
+    
+    // Submeny för Egna projekt
+    const visaPlanerad = document.getElementById('check-skede-planerad').checked;
+    const visaInventerad = document.getElementById('check-skede-klar').checked;
 
-    const filterSkede = {
-        planerad: document.getElementById('check-skede-planerad').checked,
-        klar: document.getElementById('check-skede-klar').checked,
-        avslutad: document.getElementById('check-skede-avslutad').checked
-    };
+    // SKS Inställningar
+    const antalVeckor = parseInt(document.getElementById('weeks-input').value) || 12;
 
+    // 2. Rensa gamla lager från kartan
     if (masterLayer) map.removeLayer(masterLayer);
     if (anmalningarLayer) map.removeLayer(anmalningarLayer);
     if (egnaOmradenLayer) map.removeLayer(egnaOmradenLayer);
-    masterCircles.clearLayers();
+    masterCircles.clearLayers(); // Rensar alla prio-cirklar
 
-    // Ladda SKS-basen (Används för både Master-ärenden och nya anmälningar)
+    // 3. LAGER: SKS-data (Används för både Pågående Ärenden och Råa anmälningar)
     fetch(filAnmalningar).then(r => r.json()).then(data => {
         
-        // 1. LAGER: Master-baserade områden (Blå ytor)
-        masterLayer = L.geoJSON(data, {
-            filter: f => {
-                const match = masterData.find(row => row.Diarienummer === f.properties.Beteckn);
-                if (!match) return false;
-                if (match.Typ.toLowerCase() !== 'ärende') return false;
-                return kollaSkedeFilter(match.Skede, filterSkede);
-            },
-            style: f => getYtStyle(f, 'ärende'),
-            onEachFeature: (f, l) => { onEachFeature(f, l); ritaCirkel(f, l); }
-        });
-        if (visaArende) masterLayer.addTo(map);
+        // --- A. PÅGÅENDE ÄRENDEN (Blå ytor från Master) ---
+        if (visaArende) {
+            masterLayer = L.geoJSON(data, {
+                filter: f => {
+                    const match = masterData.find(row => row.Diarienummer === f.properties.Beteckn);
+                    return match && match.Typ.toLowerCase() === 'ärende';
+                },
+                style: f => getYtStyle(f, 'ärende'),
+                onEachFeature: (f, l) => { 
+                    onEachFeature(f, l); 
+                    ritaCirkel(f, l);
+                    l.bringToFront(); // Gör ärenden prioriterade för klick
+                }
+            }).addTo(map);
+        }
 
-        // 2. LAGER: SKS Anmälningar (Bara de som INTE finns i Master och är inom tidsramen)
+        // --- B. RÅA SKS-ANMÄLNINGAR (Röd/Orange - ej i Master) ---
         if (visaSks) {
             anmalningarLayer = L.geoJSON(data, {
                 filter: f => {
-                    // Kolla först om den redan finns i Master (då ska den inte visas här)
+                    // Skippa om den redan finns i Master
                     const finnsIMaster = masterData.some(row => row.Diarienummer === f.properties.Beteckn);
                     if (finnsIMaster) return false;
 
-                    // Kolla datumet
+                    // Datumfilter
                     const inkomDatum = new Date(f.properties.Inkomdatum);
                     const idag = new Date();
                     const gransDatum = new Date();
                     gransDatum.setDate(idag.getDate() - (antalVeckor * 7));
 
-                    return inkomDatum >= gransDatum; // Visa bara om inkommit efter gränsen
+                    return inkomDatum >= gransDatum;
                 },
                 style: getSksStyle,
                 onEachFeature: onEachFeature
             }).addTo(map);
+            
+            // Lägg anmälningarna längst bak så de inte täcker våra egna markeringar
+            anmalningarLayer.bringToBack();
         }
     });
 
-    // 3. LAGER: Egna områden (Lila/Gröna ytor från egna_omraden.geojson)
-    fetch(filEgna).then(r => r.json()).then(data => {
-        egnaOmradenLayer = L.geoJSON(data, {
-            filter: f => {
-                const match = masterData.find(row => row.Diarienummer === f.properties.Beteckn);
-                if (!match) return visaEgen; // Visa om den saknas i master men finns i filen
-                if (match.Typ.toLowerCase() !== 'egen') return false;
-                return kollaSkedeFilter(match.Skede, filterSkede);
-            },
-            style: f => getYtStyle(f, 'egen'),
-            onEachFeature: (f, l) => { onEachFeature(f, l); ritaCirkel(f, l); }
+    // 4. LAGER: EGNA PROJEKT (Lila ytor från egna_omraden.geojson)
+    if (visaEgenHuvud) {
+        fetch(filEgna).then(r => r.json()).then(data => {
+            egnaOmradenLayer = L.geoJSON(data, {
+                filter: f => {
+                    const match = masterData.find(row => row.Diarienummer === f.properties.Beteckn);
+                    
+                    // Om den inte finns i Master alls, visa den som "Egen" som default
+                    if (!match) return true; 
+                    if (match.Typ.toLowerCase() !== 'egen') return false;
+
+                    // Submeny-filter baserat på Skede
+                    const skede = (match.Skede || "").toLowerCase();
+                    if (skede === 'planerad') return visaPlanerad;
+                    if (skede === 'inventerad' || skede === 'klar') return visaInventerad;
+                    
+                    // Om det är t.ex. "Skyddad" eller "Avverkad" men Typ=Egen, visa den
+                    return true; 
+                },
+                style: f => getYtStyle(f, 'egen'),
+                onEachFeature: (f, l) => { 
+                    onEachFeature(f, l); 
+                    ritaCirkel(f, l);
+                    l.bringToFront(); // Gör egna projekt prioriterade för klick
+                }
+            }).addTo(map);
         });
-        if (visaEgen) egnaOmradenLayer.addTo(map);
-    });
+    }
 }
 
 // --- HJÄLPFUNKTIONER FÖR STIL ---
@@ -122,15 +144,15 @@ function getYtStyle(feature, typ) {
     const match = masterData.find(row => row.Diarienummer === feature.properties.Beteckn);
     const skede = match ? (match.Skede || "").toLowerCase() : "";
 
-    if (skede === 'skyddad') return { color: "#1b5e20", fillColor: "#2e7d32", fillOpacity: 0.4, weight: 3 };
-    if (skede === 'avverkad') return { color: "#757575", fillColor: "#9e9e9e", fillOpacity: 0.2, weight: 2 };
+    if (skede === 'skyddad') return { color: "#1b5e20", fillColor: "#2e7d32", fillOpacity: 0.6, weight: 3 };
+    if (skede === 'avverkad') return { color: "#757575", fillColor: "#9e9e9e", fillOpacity: 0.4, weight: 2 };
     
     const isPlanerad = skede === 'planerad';
     return {
         color: typ === 'egen' ? '#8e44ad' : '#2980b9',
         weight: 3,
-        dashArray: isPlanerad ? '5, 8' : '0',
-        fillOpacity: 0.3
+        dashArray: isPlanerad ? '5, 5' : '0',
+        fillOpacity: 0.6
     };
 }
 
@@ -138,8 +160,8 @@ function getSksStyle(f) {
     const inkom = new Date(f.properties.Inkomdatum);
     const nu = new Date();
     const diffDagar = (nu - inkom) / (1000 * 60 * 60 * 24);
-    const farg = diffDagar <= 42 ? '#e74c3c' : '#e67e22'; // 6 veckor gräns
-    return { color: farg, weight: 2, fillOpacity: 0.4, fillColor: farg };
+    const farg = diffDagar <= 42 ? '#e6311c' : '#e67e22'; // 6 veckor gräns
+    return { color: farg, weight: 2, fillOpacity: 0.7, fillColor: farg };
 }
 
 function ritaCirkel(feature, layer) {
@@ -154,12 +176,12 @@ function ritaCirkel(feature, layer) {
     let färg = "#ffffff"; 
     if (skede === 'skyddad') färg = "#1b5e20";
     else if (skede === 'avverkad') färg = "#9e9e9e";
-    else if (prio === 'hög') färg = "#e74c3c";
+    else if (prio === 'hög') färg = "#ff0404";
     else if (prio === 'mellan') färg = "#f1c40f";
-    else if (prio === 'låg') färg = "#2ecc71";
+    else if (prio === 'låg') färg = "#09ca59";
 
     // Kant (Varningar)
-    let kant = "transparent";
+    let kant = "transparent"; //färg; 
     let tjocklek = 0;
 
     if (deadlineStr && skede !== 'skyddad' && skede !== 'avverkad') {
@@ -168,7 +190,7 @@ function ritaCirkel(feature, layer) {
         const dagar = Math.ceil((d - nu) / (1000 * 60 * 60 * 24));
 
         if (dagar <= 0) { kant = "#000000"; tjocklek = 3; }
-        else if (dagar <= 7) { kant = "#7f8c8d"; tjocklek = 3; }
+        else if (dagar <= 7) { kant = "#5f6161"; tjocklek = 3; }
     }
 
     const circle = L.circleMarker(layer.getBounds().getCenter(), {
@@ -176,7 +198,7 @@ function ritaCirkel(feature, layer) {
         fillColor: färg,
         color: kant,
         weight: tjocklek,
-        fillOpacity: 0.9,
+        fillOpacity: 0.8,
         interactive: false
     }).addTo(masterCircles);
 }
@@ -223,20 +245,108 @@ function onEachFeature(feature, layer) {
     });
 }
 
-// --- EVENT LISTENERS ---
-document.getElementById('weeks-input').addEventListener('change', uppdateraKartan);
+function utforSokning() {
+    const term = document.getElementById('map-search').value.toLowerCase().trim();
+    if (term.length < 2) return;
 
-document.getElementById('basemap-select').addEventListener('change', e => {
-    if (e.target.value === 'sat') { map.removeLayer(topoLayer); satLayer.addTo(map); }
-    else { map.removeLayer(satLayer); topoLayer.addTo(map); }
+    let hittatLager = null;
+
+    // Vi letar igenom alla lager som för tillfället finns på kartan
+    const allaLagerGrupper = [masterLayer, egnaOmradenLayer, anmalningarLayer];
+    
+    allaLagerGrupper.forEach(group => {
+        if (!group) return;
+        group.eachLayer(layer => {
+            const p = layer.feature.properties;
+            const id = (p.Beteckn || p.Diarienummer || "").toLowerCase();
+            
+            // Kolla även i MasterData för att kunna söka på "Trivialnamn"
+            const matchIMaster = masterData.find(row => 
+                row.Diarienummer && row.Diarienummer.toLowerCase() === id
+            );
+            const trivialNamn = matchIMaster && matchIMaster.Trivialnamn ? matchIMaster.Trivialnamn.toLowerCase() : "";
+
+            // Om söktermen matchar ID eller Trivialnamn
+            if (id.includes(term) || trivialNamn.includes(term)) {
+                hittatLager = layer;
+            }
+        });
+    });
+
+    if (hittatLager) {
+        const bounds = hittatLager.getBounds();
+        map.fitBounds(bounds, { maxZoom: 16, padding: [20, 20] });
+        
+        // Simulera ett klick för att öppna infopanelen
+        hittatLager.fire('click');
+
+        // Visuell feedback (blink)
+        const originalStyle = { ...hittatLager.options.style };
+        hittatLager.setStyle({ color: 'yellow', weight: 8, fillOpacity: 0.7 });
+        
+        setTimeout(() => {
+            // Återställ till originalstil (använder befintlig logik)
+            if (hittatLager.feature) {
+                const match = masterData.find(row => row.Diarienummer === hittatLager.feature.properties.Beteckn);
+                const typ = (match && match.Typ) ? match.Typ.toLowerCase() : 'sks';
+                hittatLager.setStyle(typ === 'sks' ? getSksStyle(hittatLager.feature) : getYtStyle(hittatLager.feature, typ));
+            }
+        }, 1200);
+    } else {
+        alert("Hittade inget område som matchar: " + term);
+    }
+}
+
+// EVENTLYSSNARE
+// 1. Basemap-väljaren
+const basemapSelect = document.getElementById('basemap-select');
+if (basemapSelect) {
+    basemapSelect.addEventListener('change', e => {
+        if (e.target.value === 'sat') { 
+            map.removeLayer(topoLayer); 
+            satLayer.addTo(map); 
+        } else { 
+            map.removeLayer(satLayer); 
+            topoLayer.addTo(map); 
+        }
+    });
+}
+
+// 2. Alla filter som ska uppdatera kartan
+const inputIds = [
+    'check-typ-arende',   // Pågående ärenden
+    'check-typ-egen',     // Egna projekt (huvud)
+    'check-skede-planerad', // Submeny Planerade
+    'check-skede-klar',     // Submeny Inventerade
+    'layer-sks',          // SKS huvudruta
+    'weeks-input',        // Antal veckor (sifferbox)
+    'layer-arter'         // Artpunkter
+];
+
+inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        // Om det är sifferboxen lyssnar vi på 'input' så det ändras direkt
+        const eventType = el.type === 'number' ? 'input' : 'change';
+        el.addEventListener(eventType, uppdateraKartan);
+    } else {
+        // Detta hjälper oss att se om vi stavat fel på något ID i framtiden
+        console.warn(`Hittade inte elementet: ${id}`);
+    }
 });
 
-[
-    'check-typ-arende', 'check-typ-egen', 'layer-sks', 
-    'check-skede-planerad', 'check-skede-klar', 'check-skede-avslutad'
-].forEach(id => {
-    document.getElementById(id).addEventListener('change', uppdateraKartan);
-});
+// 3. Sökfunktionen
+const searchBtn = document.getElementById('search-btn');
+if (searchBtn) searchBtn.addEventListener('click', utforSokning);
 
-// Starta allt
-laddaMasterSheet();
+const searchInput = document.getElementById('map-search');
+if (searchInput) {
+    searchInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') utforSokning();
+    });
+}
+
+// --- STARTA ALLT ---
+document.addEventListener('DOMContentLoaded', function() {
+    laddaMasterSheet();
+});
