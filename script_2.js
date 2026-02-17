@@ -8,6 +8,17 @@ const filEgna = 'data/egna_omraden.geojson';
 
 // --- INITIALISERING ---
 const map = L.map('map').setView([59.8585, 17.6389], 11);
+
+// Skapa fasta våningar (Panes) innan lagren läggs till
+map.createPane('sksPane');      // Bottenvåning för råa anmälningar
+map.getPane('sksPane').style.zIndex = 400;
+
+map.createPane('masterPane');   // Mellanvåning för Pågående & Egna
+map.getPane('masterPane').style.zIndex = 500;
+
+map.createPane('circlePane');   // Toppvåning för Prio-cirklar
+map.getPane('circlePane').style.zIndex = 600;
+
 masterCircles.addTo(map);
 
 const topoLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -62,13 +73,14 @@ function uppdateraKartan() {
         // --- A. PÅGÅENDE ÄRENDEN (Blå ytor från Master) ---
         if (visaArende) {
             masterLayer = L.geoJSON(data, {
+                pane: 'masterPane',
                 filter: f => {
                     const match = masterData.find(row => row.Diarienummer === f.properties.Beteckn);
                     return match && match.Typ.toLowerCase() === 'ärende';
                 },
                 style: f => getYtStyle(f, 'ärende'),
                 onEachFeature: (f, l) => { 
-                    onEachFeature(f, l); 
+                    onEachFeature(f, l, 'arende');
                     ritaCirkel(f, l);
                     l.bringToFront(); // Gör ärenden prioriterade för klick
                 }
@@ -78,10 +90,11 @@ function uppdateraKartan() {
         // --- B. RÅA SKS-ANMÄLNINGAR (Röd/Orange - ej i Master) ---
         if (visaSks) {
             anmalningarLayer = L.geoJSON(data, {
+                pane: 'sksPane',
                 filter: f => {
                     // Skippa om den redan finns i Master
-                    const finnsIMaster = masterData.some(row => row.Diarienummer === f.properties.Beteckn);
-                    if (finnsIMaster) return false;
+                    //const finnsIMaster = masterData.some(row => row.Diarienummer === f.properties.Beteckn);
+                    //if (finnsIMaster) return false;
 
                     // Datumfilter
                     const inkomDatum = new Date(f.properties.Inkomdatum);
@@ -92,7 +105,7 @@ function uppdateraKartan() {
                     return inkomDatum >= gransDatum;
                 },
                 style: getSksStyle,
-                onEachFeature: onEachFeature
+                onEachFeature: (f, l) => onEachFeature(f, l, 'sks') //onEachFeature: onEachFeature
             }).addTo(map);
             
             // Lägg anmälningarna längst bak så de inte täcker våra egna markeringar
@@ -104,6 +117,7 @@ function uppdateraKartan() {
     if (visaEgenHuvud) {
         fetch(filEgna).then(r => r.json()).then(data => {
             egnaOmradenLayer = L.geoJSON(data, {
+                pane: 'masterPane',
                 filter: f => {
                     const match = masterData.find(row => row.Diarienummer === f.properties.Beteckn);
                     
@@ -121,7 +135,7 @@ function uppdateraKartan() {
                 },
                 style: f => getYtStyle(f, 'egen'),
                 onEachFeature: (f, l) => { 
-                    onEachFeature(f, l); 
+                    onEachFeature(f, l, 'egen'); 
                     ritaCirkel(f, l);
                     l.bringToFront(); // Gör egna projekt prioriterade för klick
                 }
@@ -199,48 +213,65 @@ function ritaCirkel(feature, layer) {
         color: kant,
         weight: tjocklek,
         fillOpacity: 0.8,
-        interactive: false
+        interactive: false,
+        pane: 'circlePane'
     }).addTo(masterCircles);
 }
 
 // --- INFORUTA & KLICK ---
-function onEachFeature(feature, layer) {
+function onEachFeature(feature, layer, typ) {
     layer.on('click', function(e) {
         const id = feature.properties.Beteckn;
-        const match = masterData.find(row => row.Diarienummer === id);
+        const match = (typ !== 'sks') ? masterData.find(row => row.Diarienummer === id) : null;
         const p = feature.properties;
 
+        // 1. NOLLSTÄLL ALLA FÄLT INNAN NY INFO SKRIVS
+        document.getElementById('info-title').innerText = "-";
+        document.getElementById('info-fastighet').innerText = "Fastighet: -";
+        document.getElementById('info-dnr').innerText = "-";
+        document.getElementById('info-prio').innerText = "-";
+        document.getElementById('info-juridik').innerText = "-";
+        document.getElementById('info-next-step').innerText = "-";
+        document.getElementById('info-arter').innerText = "-";
+        document.getElementById('info-comment').innerHTML = ""; // Rensar även HTML (loggen)
+        document.getElementById('btn-open-doc').style.display = 'none';
+
+        // 2. VISA PANELEN OCH DÖLJ PLACEHOLDER
         document.getElementById('placeholder-text').style.display = 'none';
         document.getElementById('data-content').style.display = 'block';
 
+        
+
         if (match) {
+            // 3. FYLL I DATA FRÅN MASTER (OM MATCH FINNS)
             document.getElementById('info-title').innerText = match.Trivialnamn || id;
             document.getElementById('info-fastighet').innerText = "Fastighet: " + (match.Fastighet || "-");
             document.getElementById('info-dnr').innerText = id;
             document.getElementById('info-prio').innerText = match.Prioritet || "Oklart";
             document.getElementById('info-juridik').innerText = match.Juridik || "Ingen";
             document.getElementById('info-next-step').innerText = match["Nästa steg"] || "Ingen åtgärd planerad";
-            document.getElementById('info-arter').innerText = match["Prioriterade arter"] || "-";
-            document.getElementById('info-comment').innerText = match["Övriga kommentarer"] || "";
+            document.getElementById('info-arter').innerText = match["Prioriterade arter"] || "🌿";
+            
+            // Hantera kommentarer/logg (bevarar radbrytningar)
+            const kommentar = match["Övriga kommentarer"] || "";
+            document.getElementById('info-comment').innerText = kommentar;
 
             // Dynamisk länk
             const linkBtn = document.getElementById('btn-open-doc');
-            if (match.Dokumentlänk) {
+            if (match.Dokumentlänk && match.Dokumentlänk.startsWith('http')) {
                 linkBtn.style.display = 'block';
                 linkBtn.href = match.Dokumentlänk;
                 linkBtn.innerText = match.Dokumentlänk.includes('document') ? "📄 Öppna dokument" : "📂 Öppna mapp";
-            } else {
-                linkBtn.style.display = 'none';
             }
         } else {
-            // SKS-rådata om ej i Master
-            document.getElementById('info-title').innerText = "Ny anmälan";
-            document.getElementById('info-fastighet').innerText = p.Kommun || "SKS";
+            // 4. SKS-RÅDATA (OM OMRÅDET INTE FINNS I MASTER)
+            document.getElementById('info-title').innerText = "SKS Anmälan";
+            document.getElementById('info-fastighet').innerText = p.Kommun || "Information saknas";
             document.getElementById('info-dnr').innerText = id;
-            document.getElementById('info-next-step').innerText = "Ej i Master - Behöver kollas!";
-            document.getElementById('info-comment').innerText = `Inkom: ${p.Inkomdatum}\nTyp: ${p.Avverktyp}`;
-            document.getElementById('btn-open-doc').style.display = 'none';
+            document.getElementById('info-next-step').innerText = " - ";
+            document.getElementById('info-comment').innerText = `Inkomdatum: ${p.Inkomdatum ? p.Inkomdatum.split('T')[0] : "-"}\nAvverktyp: ${p.Avverktyp || 'Ej angivet'}\nAreal: ${p.AnmaldHa || '-'} ha`;
         }
+
         L.DomEvent.stopPropagation(e);
     });
 }
