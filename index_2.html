@@ -77,32 +77,40 @@
             <div id="info-panel">
                 <div id="placeholder-text">Klicka på ett område på kartan för att se detaljer.</div>
                 <div id="data-content" style="display:none;">
-                    <h2 id="info-title" style="margin-bottom: 5px;">Huvudområde</h2>
-                    <p id="info-fastighet" style="font-style: italic; color: #666; margin-bottom: 10px;">Fastighet: -</p>
+                    <h2 id="info-title">-</h2>
+                    <p id="info-fastighet" style="font-style: italic; color: #666;">-</p>
                     
-                    <div id="info-prio-status" style="border-left: 4px solid #ccc; padding-left: 10px; margin-bottom: 15px;">
-                        <p><strong>Dnr:</strong> <span id="info-dnr">-</span></p>
-                        <p><strong>Prioritet:</strong> <span id="info-prio">-</span></p>
-                        <p><strong>Juridik:</strong> <span id="info-juridik">-</span></p>
+                    <div id="view-master" class="info-view">
+                        <div class="prio-status-box master-border">
+                            <p><strong>Dnr:</strong> <span id="info-dnr">-</span></p>
+                            <p><strong>Prioritet:</strong> <span id="info-prio">-</span></p>
+                            <p><strong>Juridik:</strong> <span id="info-juridik">-</span></p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <label>NÄSTA STEG:</label>
+                            <div id="info-next-step" class="highlight-box">-</div>
+                        </div>
+
+                        <div class="info-section">
+                            <label>PRIORITERADE ARTER:</label>
+                            <div id="info-arter" class="species-box">-</div>
+                        </div>
                     </div>
 
-                    <div class="info-section">
-                        <label>NÄSTA STEG:</label>
-                        <div id="info-next-step" class="highlight-box">-</div>
+                    <div id="view-sks" class="info-view sks-border" style="display:none;">
+                        <div class="sks-data-grid">
+                            <p><strong>Beteckning:</strong> <span id="sks-dnr">-</span></p>
+                            <p><strong>Typ:</strong> <span id="sks-typ">-</span></p>
+                            <p><strong>Areal:</strong> <span id="sks-ha">-</span> ha</p>
+                            <p><strong>Inkom:</strong> <span id="sks-datum">-</span></p>
+                            <p><strong>Status:</strong> <span id="sks-status">-</span></p>
+                        </div>
                     </div>
 
-                    <div class="info-section">
-                        <label>PRIORITERADE ARTER:</label>
-                        <div id="info-arter">-</div>
-                    </div>
-
-                    <div class="info-section">
-                        <label>KOMMENTARER & LOGG:</label>
+                    <div class="info-section" style="margin-top:15px;">
+                        <label id="comment-label">KOMMENTARER:</label>
                         <div id="info-comment" class="comment-box"></div>
-                    </div>
-
-                    <div id="link-container" style="margin-top: 15px;">
-                        <a id="btn-open-doc" href="#" target="_blank" class="action-button">Öppna dokumentation</a>
                     </div>
                 </div>
             </div>

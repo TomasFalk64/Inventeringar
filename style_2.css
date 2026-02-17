@@ -67,6 +67,38 @@ header {
     letter-spacing: 0.5px;
 }
 
+.master-border {
+    border-left: 5px solid #3498db;
+    background: #f8fbff;
+    padding: 10px;
+}
+
+.species-box {
+    background: #f1f3f4;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-style: italic;
+}
+
+/* SKS-vyn (Orange profil) */
+.sks-border {
+    border-left: 5px solid #e67e22;
+    background: #fffaf5;
+    padding: 10px;
+}
+
+.sks-data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Två kolumner för SKS-data */
+    gap: 5px;
+    font-size: 0.9rem;
+}
+
+.sks-data-grid p {
+    margin: 2px 0;
+}
+
 .highlight-box {
     background: #f1f3f4;
     padding: 10px;
@@ -167,3 +199,14 @@ header {
 #info-panel::-webkit-scrollbar-track { background: #f1f1f1; }
 #info-panel::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 #info-panel::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+
+/* Om Master-vyn är synlig, gör rubriken blå */
+#view-master:not([style*="display: none"]) ~ h2#info-title {
+    color: #2c3e50;
+}
+
+/* Om SKS-vyn är synlig, gör rubriken orange */
+#view-sks:not([style*="display: none"]) ~ h2#info-title {
+    color: #e67e22;
+}

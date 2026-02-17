@@ -219,57 +219,62 @@ function ritaCirkel(feature, layer) {
 }
 
 // --- INFORUTA & KLICK ---
-function onEachFeature(feature, layer, typ) {
+function onEachFeature(feature, layer, typ) { 
     layer.on('click', function(e) {
-        const id = feature.properties.Beteckn;
-        const match = (typ !== 'sks') ? masterData.find(row => row.Diarienummer === id) : null;
         const p = feature.properties;
+        const id = p.Beteckn;
+        const match = (typ !== 'sks') ? masterData.find(row => row.Diarienummer === id) : null;
 
-        // 1. NOLLSTÄLL ALLA FÄLT INNAN NY INFO SKRIVS
-        document.getElementById('info-title').innerText = "-";
-        document.getElementById('info-fastighet').innerText = "Fastighet: -";
-        document.getElementById('info-dnr').innerText = "-";
-        document.getElementById('info-prio').innerText = "-";
-        document.getElementById('info-juridik').innerText = "-";
-        document.getElementById('info-next-step').innerText = "-";
-        document.getElementById('info-arter').innerText = "-";
-        document.getElementById('info-comment').innerHTML = ""; // Rensar även HTML (loggen)
-        document.getElementById('btn-open-doc').style.display = 'none';
-
-        // 2. VISA PANELEN OCH DÖLJ PLACEHOLDER
+        // Dölj båda vyerna först
+        document.getElementById('view-master').style.display = 'none';
+        document.getElementById('view-sks').style.display = 'none';
         document.getElementById('placeholder-text').style.display = 'none';
         document.getElementById('data-content').style.display = 'block';
 
-        
-
         if (match) {
-            // 3. FYLL I DATA FRÅN MASTER (OM MATCH FINNS)
+            // VISA MASTER-VY
+            document.getElementById('view-master').style.display = 'block';
+            
+            // Fyll basinfo
             document.getElementById('info-title').innerText = match.Trivialnamn || id;
             document.getElementById('info-fastighet').innerText = "Fastighet: " + (match.Fastighet || "-");
-            document.getElementById('info-dnr').innerText = id;
-            document.getElementById('info-prio').innerText = match.Prioritet || "Oklart";
-            document.getElementById('info-juridik').innerText = match.Juridik || "Ingen";
-            document.getElementById('info-next-step').innerText = match["Nästa steg"] || "Ingen åtgärd planerad";
-            document.getElementById('info-arter').innerText = match["Prioriterade arter"] || "🌿";
             
-            // Hantera kommentarer/logg (bevarar radbrytningar)
-            const kommentar = match["Övriga kommentarer"] || "";
-            document.getElementById('info-comment').innerText = kommentar;
+            // Fyll Master-specifika fält
+            document.getElementById('info-dnr').innerText = id;
+            document.getElementById('info-prio').innerText = match.Prioritet || "-";
+            document.getElementById('info-juridik').innerText = match.Juridik || "-";
+            document.getElementById('info-next-step').innerText = match["Nästa steg"] || "-";
+            document.getElementById('info-arter').innerText = match["Prioriterade arter"] || "Inga noterade";
+            
+            // Kommentarer
+            document.getElementById('info-comment').innerText = match["Övriga kommentarer"] || "";
 
-            // Dynamisk länk
+            // Länkhantering
             const linkBtn = document.getElementById('btn-open-doc');
             if (match.Dokumentlänk && match.Dokumentlänk.startsWith('http')) {
-                linkBtn.style.display = 'block';
                 linkBtn.href = match.Dokumentlänk;
-                linkBtn.innerText = match.Dokumentlänk.includes('document') ? "📄 Öppna dokument" : "📂 Öppna mapp";
+                linkBtn.style.display = 'inline-block';
+            } else {
+                linkBtn.style.display = 'none';
             }
+
         } else {
-            // 4. SKS-RÅDATA (OM OMRÅDET INTE FINNS I MASTER)
-            document.getElementById('info-title').innerText = "SKS Anmälan";
-            document.getElementById('info-fastighet').innerText = p.Kommun || "Information saknas";
-            document.getElementById('info-dnr').innerText = id;
-            document.getElementById('info-next-step').innerText = " - ";
-            document.getElementById('info-comment').innerText = `Inkomdatum: ${p.Inkomdatum ? p.Inkomdatum.split('T')[0] : "-"}\nAvverktyp: ${p.Avverktyp || 'Ej angivet'}\nAreal: ${p.AnmaldHa || '-'} ha`;
+            // VISA SKS-VY
+            document.getElementById('view-sks').style.display = 'block';
+            
+            document.getElementById('info-title').innerText = "SKS Originaldata";
+            document.getElementById('info-fastighet').innerText = (p.Lan || "") + " " + (p.Kommun || "");
+
+            // Fyll SKS-fält (ID:n som matchar din nya HTML)
+            document.getElementById('sks-dnr').innerText = p.Beteckn || "-";
+            document.getElementById('sks-typ').innerText = p.Avverktyp || "-";
+            document.getElementById('sks-ha').innerText = p.AnmaldHa || "-";
+            document.getElementById('sks-datum').innerText = p.Inkomdatum || "-";
+            document.getElementById('sks-status').innerText = p.ArendeStatus || "-";
+
+            // SKS-specifik text i kommentarsrutan
+            document.getElementById('info-comment').innerText = 
+                `Ändamål: ${p.Andamal || '-'}\nSkogstyp: ${p.Skogstyp || '-'}\nKlass: ${p.AvverkningsanmalanKlass || '-'}`;
         }
 
         L.DomEvent.stopPropagation(e);
