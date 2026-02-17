@@ -3,6 +3,8 @@ let masterLayer;
 let anmalningarLayer; 
 let egnaOmradenLayer;
 let masterCircles = L.layerGroup(); // En grupp för alla prioriterings-cirklar
+let egnaCirklarLayer = L.layerGroup(); // En speciell behållare för bara cirklarna
+
 
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoJz7Pap7O0UQqtmPWNeZ8M3MmNVkcLC8tkw8PjTufkZkKq-74wH2HuwqcTQfN20be77kNkoy-rrLh/pub?output=csv';
 const fil1 = 'data/skogsstyrelsen_omraden.geojson';
@@ -74,7 +76,7 @@ function uppdateraKartan() {
                 }).addTo(map);
             }
         
-        if (document.getElementById('layer-egne').checked) { laddaEgnaOmraden(); }
+        laddaEgnaOmraden();
 
         });
 }
@@ -128,25 +130,52 @@ function laddaEgnaOmraden() {
     fetch(fil2)
         .then(response => response.json())
         .then(data => {
+            // Rensa både polygoner och cirklar
             if (egnaOmradenLayer) map.removeLayer(egnaOmradenLayer);
+            if (egnaCirklarLayer) map.removeLayer(egnaCirklarLayer); 
             
+            // Skapa en ny tom grupp för cirklar
+            egnaCirklarLayer = L.layerGroup().addTo(map);
+
+            const visaPlanerad = document.getElementById('check-planerad').checked;
+            const visaUtford = document.getElementById('check-klar').checked;
+
             egnaOmradenLayer = L.geoJSON(data, {
-                style: {
-                    color: '#8e44ad', // Lila för egna områden
-                    weight: 3,
-                    fillOpacity: 0.3
+                filter: function(feature) {
+                    const id = feature.properties.Beteckn; 
+                    const match = masterData.find(row => row.Diarienummer === id);
+                    if (!match) return true; 
+
+                    const statusVal = (match.Status || "").toLowerCase();
+                    if (statusVal.includes("planerad")) return visaPlanerad;
+                    if ( statusVal.includes("inventerad")) return visaUtford;
+                    
+                    console.log(`DEBUG: ID "${id}" har en okänd status i Master: "${statusVal}"`);
+                    return true;
+                },
+                style: function(feature) {
+                    const id = feature.properties.Beteckn;
+                    const match = masterData.find(row => row.Diarienummer === id);
+                    const isPlanerad = match && (match.Status || "").toLowerCase().includes("planerad");
+                    
+                    return {
+                        color: isPlanerad ? '#8d5ba3' : '#8e44ad',
+                        weight: 3,
+                        dashArray: isPlanerad ? '5, 5' : '0',
+                        fillOpacity: 0.3
+                    };
                 },
                 onEachFeature: function(feature, layer) {
-                    onEachFeature(feature, layer); // Klick-info
+                    onEachFeature(feature, layer); 
                     
-                    // RITA ALLTID CIRKELN om den finns i MasterData
-                    // Vi skickar 'true' för att få den lila/vita stilen
-                    ritaPrioritetsCirkel(feature, layer, true);
+                    // VIKTIGT: Vi skickar med egnaCirklarLayer så cirkeln hamnar i rätt grupp
+                    ritaPrioritetsCirkel(feature, layer, true, egnaCirklarLayer);
                 }
             }).addTo(map);
-        })
-        .catch(err => console.log("Inga egna områden hittades än (fil2)."));
+        });
 }
+
+
 
 // Kontroll för lager-checkboxar
 document.getElementById('layer-arter').addEventListener('change', function(e) {
@@ -156,7 +185,7 @@ document.getElementById('layer-arter').addEventListener('change', function(e) {
 });
 
 
-function ritaPrioritetsCirkel(feature, layer, isEget = false) {
+function ritaPrioritetsCirkel(feature, layer, isEget = false, targetGroup = null) {
     const dnr = feature.properties.Beteckn || feature.properties.Diarienummer;
     const match = masterData.find(row => row.Diarienummer === dnr);
 
@@ -196,7 +225,11 @@ function ritaPrioritetsCirkel(feature, layer, isEget = false) {
             interactive: false
         });
 
-        circle.addTo(masterCircles);
+        if (targetGroup) {
+            circle.addTo(targetGroup);
+        } else {
+            circle.addTo(masterCircles);
+        }
     }
 }
 
@@ -457,10 +490,6 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('layer-master').addEventListener('change', uppdateraKartan);
 document.getElementById('layer-sks').addEventListener('change', uppdateraKartan);
 document.getElementById('weeks-input').addEventListener('change', uppdateraKartan);
-document.getElementById('layer-egne').addEventListener('change', function(e) {
-    if (!e.target.checked && egnaOmradenLayer) {
-        map.removeLayer(egnaOmradenLayer);
-    }
-    uppdateraKartan(); 
-});
 
+document.getElementById('check-planerad').addEventListener('change', laddaEgnaOmraden);
+document.getElementById('check-klar').addEventListener('change', laddaEgnaOmraden);

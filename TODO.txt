@@ -4,4 +4,4 @@ jag skulle behöva ett readme.md
 
 Städa upp kod
 
-planerad inventering i lila kontur vit cirkel
+Göra om master och justera kod pga det

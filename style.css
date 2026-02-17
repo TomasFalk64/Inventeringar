@@ -163,3 +163,10 @@ header {
     margin-right: 8px;
     display: inline-block;
 }
+
+.submenu {
+    margin-left: 20px; /* Skjuter in rutorna */
+    font-size: 0.9em;
+    border-left: 1px solid #ddd;
+    padding-left: 10px;
+}
