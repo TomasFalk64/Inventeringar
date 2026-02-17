@@ -84,19 +84,34 @@ header {
 /* SKS-vyn (Orange profil) */
 .sks-border {
     border-left: 5px solid #e67e22;
-    background: #fffaf5;
+    
     padding: 10px;
 }
 
 .sks-data-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Två kolumner för SKS-data */
-    gap: 5px;
-    font-size: 0.9rem;
+    display: block; /* Tar bort kolumnerna */
+    font-size: 0.95rem;
 }
 
 .sks-data-grid p {
-    margin: 2px 0;
+    display: flex;
+    justify-content: flex-start;
+    margin: 6px 0;
+    
+    padding-bottom: 4px;
+}
+
+.sks-data-grid p strong {
+    width: 120px; /* Ger alla rubriker samma bredd */
+    flex-shrink: 0; /* Hindrar rubriken från att tryckas ihop */
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.sks-data-grid span {
+    font-weight: 500;
+    color: #2c3e50;
+    text-align: left; /* Ändrat från right */
 }
 
 .highlight-box {

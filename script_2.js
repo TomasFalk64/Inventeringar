@@ -225,56 +225,65 @@ function onEachFeature(feature, layer, typ) {
         const id = p.Beteckn;
         const match = (typ !== 'sks') ? masterData.find(row => row.Diarienummer === id) : null;
 
-        // Dölj båda vyerna först
+        // 1. NOLLSTÄLL ALLT (Dölj alla vyer och kommentar-delar)
         document.getElementById('view-master').style.display = 'none';
         document.getElementById('view-sks').style.display = 'none';
         document.getElementById('placeholder-text').style.display = 'none';
         document.getElementById('data-content').style.display = 'block';
+        
+        // Dölj hela kommentarssektionen som standard
+        document.getElementById('comment-label').style.display = 'none';
+        document.getElementById('info-comment').style.display = 'none';
 
         if (match) {
-            // VISA MASTER-VY
+            // --- VISA MASTER-VY ---
             document.getElementById('view-master').style.display = 'block';
             
-            // Fyll basinfo
+            // Tänd kommentarerna igen för Master-data
+            document.getElementById('comment-label').style.display = 'block';
+            document.getElementById('info-comment').style.display = 'block';
+            
             document.getElementById('info-title').innerText = match.Trivialnamn || id;
             document.getElementById('info-fastighet').innerText = "Fastighet: " + (match.Fastighet || "-");
             
-            // Fyll Master-specifika fält
             document.getElementById('info-dnr').innerText = id;
             document.getElementById('info-prio').innerText = match.Prioritet || "-";
             document.getElementById('info-juridik').innerText = match.Juridik || "-";
             document.getElementById('info-next-step').innerText = match["Nästa steg"] || "-";
             document.getElementById('info-arter').innerText = match["Prioriterade arter"] || "Inga noterade";
             
-            // Kommentarer
             document.getElementById('info-comment').innerText = match["Övriga kommentarer"] || "";
 
-            // Länkhantering
             const linkBtn = document.getElementById('btn-open-doc');
-            if (match.Dokumentlänk && match.Dokumentlänk.startsWith('http')) {
+            if (match.Dokumentlänk && match.Dokumentlänk.trim() !== "") {
                 linkBtn.href = match.Dokumentlänk;
-                linkBtn.style.display = 'inline-block';
+                linkBtn.style.display = 'inline-block'; // Visa knappen!
+                
+                // Valfritt: Ändra texten på knappen om det är en mapp istället för webblänk
+                if (!match.Dokumentlänk.startsWith('http')) {
+                    linkBtn.innerText = "Öppna projektmapp";
+                } else {
+                    linkBtn.innerText = "Öppna dokument";
+                }
             } else {
-                linkBtn.style.display = 'none';
+                linkBtn.style.display = 'none'; // Dölj om fältet är tomt
             }
 
         } else {
-            // VISA SKS-VY
+            // --- VISA SKS-VY ---
             document.getElementById('view-sks').style.display = 'block';
             
             document.getElementById('info-title').innerText = "SKS Originaldata";
             document.getElementById('info-fastighet').innerText = (p.Lan || "") + " " + (p.Kommun || "");
 
-            // Fyll SKS-fält (ID:n som matchar din nya HTML)
             document.getElementById('sks-dnr').innerText = p.Beteckn || "-";
             document.getElementById('sks-typ').innerText = p.Avverktyp || "-";
             document.getElementById('sks-ha').innerText = p.AnmaldHa || "-";
-            document.getElementById('sks-datum').innerText = p.Inkomdatum || "-";
+            document.getElementById('sks-datum').innerText = p.Inkomdatum ? p.Inkomdatum.split('T')[0] : "-"; 
             document.getElementById('sks-status').innerText = p.ArendeStatus || "-";
-
-            // SKS-specifik text i kommentarsrutan
-            document.getElementById('info-comment').innerText = 
-                `Ändamål: ${p.Andamal || '-'}\nSkogstyp: ${p.Skogstyp || '-'}\nKlass: ${p.AvverkningsanmalanKlass || '-'}`;
+            document.getElementById('sks-skogstyp').innerText = p.Skogstyp || "-";
+           
+            document.getElementById('btn-open-doc').style.display = 'none';
         }
 
         L.DomEvent.stopPropagation(e);
