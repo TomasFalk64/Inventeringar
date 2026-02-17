@@ -283,6 +283,8 @@ function onEachFeature(feature, layer) {
                     <p style="margin: 0 0 8px 0;"><strong>Fastighet:</strong> ${match["Fastighet"] || p.Kommun || "Ej angivet"}</p>
                     <p style="margin: 0 0 8px 0;"><strong>Nästa steg:</strong> ${match["Nästa steg"] || "Inga planerade åtgärder"}</p>
                     <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                    <p style="margin: 0;"><strong>Prioriterade arter:</strong><br>
+                    <span style="color: #444;">${match["Prioriterade arter"] || "Inga anteckningar."}</span></p>
                     <p style="margin: 0;"><strong>Övriga kommentarer:</strong><br>
                     <span style="color: #444;">${match["Övriga kommentarer"] || "Inga anteckningar."}</span></p>
                 </div>
