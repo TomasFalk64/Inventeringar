@@ -1,3 +1,6 @@
-# Ignorera tunga datakällor
-
+# Ignorera mapp
 data/
+
+# Men gör undantag för dessa två specifika filer
+!data/uppsala_anmalningar.geojson
+!data/egna_omraden.geojson
