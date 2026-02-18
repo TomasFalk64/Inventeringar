@@ -220,8 +220,16 @@ function ritaCirkel(feature, layer) {
 
 // --- INFORUTA & KLICK ---
 function onEachFeature(feature, layer, typ) { 
+    const p = feature.properties;
+    const id2 = p.Diarienummer || p.Beteckn || "";
+    layer.bindTooltip(id2, {
+        sticky: true,       // Gör att rutan följer musen
+        direction: 'top',
+        opacity: 0.9,
+        className: 'custom-tooltip' // Vi använder denna för att styla i CSS
+    });
     layer.on('click', function(e) {
-        const p = feature.properties;
+        
         const id = p.Beteckn;
         const match = (typ !== 'sks') ? masterData.find(row => row.Diarienummer === id) : null;
 
@@ -390,6 +398,16 @@ if (searchInput) {
         if (e.key === 'Enter') utforSokning();
     });
 }
+
+// 4. Uppdatera koordinatvisaren vid musrörelse
+map.on('mousemove', function(e) {
+    const lat = e.latlng.lat.toFixed(5);
+    const lng = e.latlng.lng.toFixed(5);
+    const coordsElement = document.getElementById('coords');
+    if (coordsElement) {
+        coordsElement.innerText = `Lat: ${lat}, Lng: ${lng}`;
+    }
+});
 
 // --- STARTA ALLT ---
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skogsinventering - Webbkarta</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">🌲 Föreningens Skogskarta</div>
+        <div id="coords">Koordinater: -</div>
+    </header>
+
+    <div id="main-container">
+        <aside id="sidebar">
+            <div id="controls">
+               
+                <div class="search-container" style="margin-bottom: 15px; display: flex; gap: 5px;">
+                    <input type="text" id="map-search" placeholder="Sök diarienr eller namn..." 
+                        style="flex-grow: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <button id="search-btn" style="padding: 8px 15px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 4px;">🔍</button>
+                </div>
+                
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="layer-master" checked> Pågående ärenden
+                    </label>
+                   
+                </div>
+
+                <div class="control-group sks-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="layer-sks"> Avverkningsanmälningar (SKS)
+                    </label>
+                    <div class="weeks-row">
+                        <span>Senaste:</span>
+                        <input type="number" id="weeks-input" value="12" min="1">
+                        <span>veckor</span>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label><strong>Egna inventeringar</strong></label>
+                    <div class="submenu">
+                        <label><input type="checkbox" id="check-planerad" checked> Planerade</label><br>
+                        <label><input type="checkbox" id="check-klar" checked> Utförda</label>
+                    </div>
+                </div>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="layer-arter"> Visa artpunkter
+                </label>
+
+                <hr>
+            
+                <select id="basemap-select">
+                    <option value="topo">Topografisk Karta</option>
+                    <option value="sat">Flygfoto</option>
+                </select>
+            </div>
+
+            <div id="info-panel">
+                <div id="placeholder-text">Klicka på ett område på kartan för att se detaljer.</div>
+                <div id="data-content" style="display:none;">
+                    <h3 id="info-title">Huvudområde</h3>
+                    <div id="badge-container" style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+                    <p style="text-align: center; font-size: 1.3em; color: black; margin: 15px 0;">
+                        <strong><span id="info-dnr">-</span></strong>
+                    </p>
+                    <p><strong>Naturtyp:</strong> <span id="info-natur">-</span></p>
+                    <p><strong>Beslut/Info:</strong></p>
+                    <div id="info-comment" class="comment-box"></div>
+                    <button id="btn-open-folder" class="din-css-klass">Öppna dokumentmapp</button>
+                </div>
+            </div>
+        </aside>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="script.js"></script>
+
+
+</body>
+</html>
