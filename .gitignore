@@ -1,5 +1,5 @@
 # Ignorera mapp
-data/
+data/*
 
 # Men gör undantag för dessa två specifika filer
 !data/uppsala_anmalningar.geojson
