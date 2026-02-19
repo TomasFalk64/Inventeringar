@@ -277,3 +277,24 @@ a#btn-open-doc.my-button-class:hover {
     display: none;
 }
 
+/* Gör att raderna i Master-vyn ser ut som i SKS-vyn */
+.prio-status-box p {
+    display: flex;
+    justify-content: flex-start;
+    margin: 6px 0;
+    padding-bottom: 4px;
+    font-size: 0.95rem;
+}
+
+/* Ger rubrikerna (Dnr, Inkom, Åtgärd) samma bredd så de linjerar */
+.prio-status-box p strong {
+    width: 120px; 
+    flex-shrink: 0;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.prio-status-box span {
+    font-weight: 500;
+    color: #2c3e50;
+}

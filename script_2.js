@@ -255,6 +255,8 @@ function onEachFeature(feature, layer, typ) {
             document.getElementById('info-fastighet').innerText = "Fastighet: " + (match.Fastighet || "-");
             
             document.getElementById('info-dnr').innerText = id;
+            document.getElementById('info-inkom').innerText = match["Inkomstdatum"] || "-";
+            document.getElementById('info-atgard').innerText = match["Åtgärd krävs"] || "-";
             document.getElementById('info-prio').innerText = match.Prioritet || "-";
             document.getElementById('info-juridik').innerText = match.Juridik || "-";
             document.getElementById('info-next-step').innerText = match["Nästa steg"] || "-";
