@@ -31,7 +31,7 @@ Popups: Kopplar ihop diarienumret (Beteckn) med informationen i filen så att du
 Sök/Filter: Innehåller logik för att bara visa de områden som är relevanta för din inventering.
 
 ## 📁 Filstruktur
-'
+```
 Inventeringar/
 ├── index.html                  # Huvudfilen för kartan
 ├── script_2.js                 # Logik för karta, filter och popup-fönster
@@ -41,4 +41,4 @@ Inventeringar/
    ├── Begransa_anmalningar.py # Python-skriptet som rensar och sparar historik
    ├── sksAvverkAnm.gpkg       # Källfil från Skogsstyrelsen (Hela Sverige)
    └── uppsala_anmalningar.geojson # Den färdiga, filtrerade filen som kartan läser
-'
+```
