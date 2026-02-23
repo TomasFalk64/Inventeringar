@@ -1,13 +1,15 @@
 let masterData = [];
 let masterLayer, anmalningarLayer, egnaOmradenLayer;
 let masterCircles = L.layerGroup(); 
+let lastClickedLayer = null;
+
 
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoJz7Pap7O0UQqtmPWNeZ8M3MmNVkcLC8tkw8PjTufkZkKq-74wH2HuwqcTQfN20be77kNkoy-rrLh/pub?output=csv';
 const filAnmalningar = 'data/uppsala_anmalningar.geojson';
-const filEgna = 'data/egna_omraden.geojson';
+const filEgna = 'data/egna_omraden_x.geojson';
 
 // --- INITIALISERING ---
-const map = L.map('map').setView([59.8585, 17.6389], 11);
+const map = L.map('map').setView([60.0, 17.48], 10);
 
 // Skapa fasta våningar (Panes) innan lagren läggs till
 map.createPane('sksPane');      // Bottenvåning för råa anmälningar
@@ -187,7 +189,7 @@ function ritaCirkel(feature, layer) {
     const deadlineStr = match["Åtgärd krävs"];
 
     // Fyllnadsfärg
-    let färg = "#ffffff"; 
+    let färg = "transparent"; // eller vit
     if (skede === 'skyddad') färg = "#1b5e20";
     else if (skede === 'avverkad') färg = "#9e9e9e";
     else if (prio === 'hög') färg = "#ff0404";
@@ -229,6 +231,31 @@ function onEachFeature(feature, layer, typ) {
         className: 'custom-tooltip' // Vi använder denna för att styla i CSS
     });
     layer.on('click', function(e) {
+
+        if (lastClickedLayer) {
+                let originalStyle;
+                
+                // Vi kollar vilken "typ" det gamla lagret hade för att välja rätt stil-funktion
+                if (lastClickedLayer.myCustomTyp === 'sks') {
+                    originalStyle = getSksStyle(lastClickedLayer.feature);
+                } else {
+                    // För 'arende' och 'egen' använder du funktionen getYtStyle(f, typ)
+                    originalStyle = getYtStyle(lastClickedLayer.feature, lastClickedLayer.myCustomTyp);
+                }
+                
+                lastClickedLayer.setStyle(originalStyle);
+            }
+
+            // 2. MARKERA DET NYA LAGRET (Gult och tjockt)
+            layer.setStyle({
+                //weight: 5,
+                //color: '#ffeb3b', 
+                fillOpacity: 0.8
+            });
+
+        // Spara undan typen på lagret så vi vet hur det ska återställas nästa gång
+        layer.myCustomTyp = typ; 
+        lastClickedLayer = layer;
         
         const id = p.Beteckn;
         const match = (typ !== 'sks') ? masterData.find(row => row.Diarienummer === id) : null;
@@ -374,8 +401,8 @@ const inputIds = [
     'check-skede-planerad', // Submeny Planerade
     'check-skede-klar',     // Submeny Inventerade
     'layer-sks',          // SKS huvudruta
-    'weeks-input',        // Antal veckor (sifferbox)
-    'layer-arter'         // Artpunkter
+    'weeks-input'        // Antal veckor (sifferbox)
+    
 ];
 
 inputIds.forEach(id => {
