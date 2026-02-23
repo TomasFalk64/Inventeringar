@@ -298,3 +298,61 @@ a#btn-open-doc.my-button-class:hover {
     font-weight: 500;
     color: #2c3e50;
 }
+
+
+.map-legend {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid rgba(0,0,0,0.2);
+    font-family: Arial, sans-serif;
+    line-height: 1.4;
+    max-width: 220px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+}
+
+.legend-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.legend-content {
+    display: block; /* Visas som standard */
+}
+
+.legend-content.minimized {
+    display: none; /* Döljs när vi klickar */
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+    font-size: 12px;
+}
+
+.legend-color {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    border: 1px solid #999;
+}
+
+.legend-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.submenu {
+    margin-left: 20px; /* Skjuter in rutorna */
+    font-size: 0.9em;
+    border-left: 1px solid #ddd;
+    padding-left: 10px;
+}

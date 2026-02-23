@@ -3,7 +3,7 @@ Detta projekt automatiserar hämtning och visualisering av avverkningsanmälning
 
 ## Arbetsflöde
 1. Uppdatera data (Python)
-Varje gång du vill ha färsk data från Skogsstyrelsen:
+Varje gång du vill ha färsk data från Skogsstyrelsen:    ( kommer ersättas av API skogsstyrelsen )
 Gå till Skogsstyrelsens geodata-sida.
 Ladda ner filen "Avverkningsanmälningar (hela landet)" i formatet GPKG.
 Ersätt den befintliga sksAvverkAnm.gpkg i mappen data/ med den nya filen.

@@ -379,6 +379,60 @@ function utforSokning() {
     }
 }
 
+const legendControl = L.control({ position: 'topright' });
+
+legendControl.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'map-legend');
+    
+    div.innerHTML = `
+        <div class="legend-header" id="legend-toggle">
+            <span>Teckenförklaring</span>
+            <span id="legend-icon">−</span>
+        </div>
+        <div id="legend-body" class="legend-content">
+            <hr style="margin: 5px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <div style="font-weight: bold; margin: 8px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Avverkning SKS</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(231,76,60,0.4); border-color: #e74c3c;"></div> Nyare än 6 veckor</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(230,126,34,0.4); border-color: #e67e22;"></div> Äldre än 6 veckor</div>
+
+            <div style="font-weight: bold; margin: 12px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Prioritering</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 5px;">
+                <div class="legend-item"><div class="legend-circle" style="background: #c0392b;"></div> Hög</div>
+                <div class="legend-item"><div class="legend-circle" style="background: #f1c40f;"></div> Mellan</div>
+                <div class="legend-item"><div class="legend-circle" style="background: #27ae60;"></div> Låg</div>
+                <div class="legend-item"><div class="legend-circle" style="background: #9e9e9e;"></div> Avverkad</div>
+            </div>
+            <div class="legend-item"><div class="legend-circle" style="background: #1b5e20; border: 2px #1b5e20;"></div> Skyddad</div>
+
+            <div style="font-weight: bold; margin: 12px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Varningar & Deadlines</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #ffff; border: 3px solid black;"></div> ⚠️ Åtgärd krävs</div>
+            <div class="legend-item"><div class="legend-circle" style="background: #ffff; border: 3px solid grey;"></div> ⚠️ Deadline nära (7 dagar)</div>
+            
+        </div>
+    `;
+
+    L.DomEvent.disableClickPropagation(div);
+    
+    div.querySelector('#legend-toggle').onclick = function() {
+        const body = div.querySelector('#legend-body');
+        const icon = div.querySelector('#legend-icon');
+        if (body.classList.contains('minimized')) {
+            body.classList.remove('minimized');
+            icon.innerText = '−';
+        } else {
+            body.classList.add('minimized');
+            icon.innerText = '+';
+        }
+    };
+
+    return div;
+};
+
+legendControl.addTo(map);
+
+
+
 // EVENTLYSSNARE
 // 1. Basemap-väljaren
 const basemapSelect = document.getElementById('basemap-select');

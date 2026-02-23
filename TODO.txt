@@ -1,7 +1,6 @@
 TODO
 
-jag skulle behöva ett readme.md
 
 Städa upp kod
 
-Göra om master och justera kod pga det
+skogsstyrelsen API
