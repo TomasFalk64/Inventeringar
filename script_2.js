@@ -168,7 +168,7 @@ function getYtStyle(feature, typ) {
         color: typ === 'egen' ? '#8e44ad' : '#2980b9',
         weight: 3,
         dashArray: isPlanerad ? '5, 5' : '0',
-        fillOpacity: 0.6
+        fillOpacity: 0.7
     };
 }
 
@@ -177,7 +177,7 @@ function getSksStyle(f) {
     const nu = new Date();
     const diffDagar = (nu - inkom) / (1000 * 60 * 60 * 24);
     const farg = diffDagar <= 42 ? '#e6311c' : '#e67e22'; // 6 veckor gräns
-    return { color: farg, weight: 2, fillOpacity: 0.7, fillColor: farg };
+    return { color: farg, weight: 2, fillOpacity: 0.6, fillColor: farg };
 }
 
 function ritaCirkel(feature, layer) {
@@ -391,10 +391,14 @@ legendControl.onAdd = function (map) {
         </div>
         <div id="legend-body" class="legend-content">
             <hr style="margin: 5px 0; border: 0; border-top: 1px solid #eee;">
+
+            <div style="font-weight: bold; margin: 8px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Status</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(142, 68, 173, 0.7); border-color: #8e44ad;"></div> Egna inventeringar</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(52, 152, 219, 0.7); border-color: #2980b9;"></div> Pågående ärenden</div>
             
-            <div style="font-weight: bold; margin: 8px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Avverkning SKS</div>
-            <div class="legend-item"><div class="legend-color" style="background: rgba(231,76,60,0.4); border-color: #e74c3c;"></div> Nyare än 6 veckor</div>
-            <div class="legend-item"><div class="legend-color" style="background: rgba(230,126,34,0.4); border-color: #e67e22;"></div> Äldre än 6 veckor</div>
+            <div style="font-weight: bold; margin: 8px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Anmälan SKS</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(231,76,60,0.6); border-color: #e6311c;"></div> Nyare än 6 veckor</div>
+            <div class="legend-item"><div class="legend-color" style="background: rgba(230,126,34,0.6); border-color: #e67e22;"></div> Äldre än 6 veckor</div>
 
             <div style="font-weight: bold; margin: 12px 0 4px 0; font-size: 11px; color: #666; text-transform: uppercase;">Prioritering</div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 5px;">
