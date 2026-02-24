@@ -6,7 +6,7 @@ let lastClickedLayer = null;
 
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoJz7Pap7O0UQqtmPWNeZ8M3MmNVkcLC8tkw8PjTufkZkKq-74wH2HuwqcTQfN20be77kNkoy-rrLh/pub?output=csv';
 const filAnmalningar = 'data/uppsala_anmalningar.geojson';
-const filEgna = 'data/egna_omraden_x.geojson';
+const filEgna = 'data/egna_omraden.geojson';
 
 // --- INITIALISERING ---
 const map = L.map('map').setView([60.0, 17.48], 10);
