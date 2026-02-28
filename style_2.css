@@ -1,21 +1,34 @@
-/* Grundläggande layout behålls från din originalfil */
-body, html {
+:root {
+    --bg-panel: #f8f9fa;
+    --bg-panel-alt: #eeeeee;
+    --text-main: #2c3e50;
+    --text-muted: #666666;
+    --border-muted: #dddddd;
+    --accent-blue: #2980b9;
+    --accent-purple: #8e44ad;
+    --accent-red: #e6311c;
+    --accent-orange: #e67e22;
+}
+
+html,
+body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
+    color: var(--text-main);
 }
 
 header {
-    background: #2c3e50;
-    color: white;
+    background: var(--text-main);
+    color: #ffffff;
     height: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
 }
 
@@ -26,8 +39,8 @@ header {
 
 #sidebar {
     width: 350px;
-    background: #f8f9fa;
-    border-right: 1px solid #ddd;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border-muted);
     display: flex;
     flex-direction: column;
     z-index: 900;
@@ -35,19 +48,19 @@ header {
 
 #controls {
     padding: 15px;
-    background: #eee;
-    border-bottom: 1px solid #ddd;
+    background: var(--bg-panel-alt);
+    border-bottom: 1px solid var(--border-muted);
 }
 
 #info-panel {
-    padding: 10px 20px 20px 20px;
+    padding: 10px 20px 20px;
     overflow-y: auto;
     flex-grow: 1;
-    background: white;
+    background: #ffffff;
 }
 
 #info-title {
-    margin-top: 5px; 
+    margin-top: 5px;
     margin-bottom: 5px;
     font-size: 1.4rem;
     line-height: 1.2;
@@ -56,8 +69,8 @@ header {
 #info-fastighet {
     margin-top: 0;
     margin-bottom: 15px;
-    font-style: italic; 
-    color: #666;
+    font-style: italic;
+    color: var(--text-muted);
     font-size: 0.9rem;
 }
 
@@ -66,9 +79,69 @@ header {
     height: 100%;
 }
 
-/* --- Inforutan sektioner --- */
+#status-message {
+    min-height: 1.2rem;
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    color: #1b5e20;
+}
+
+#status-message.is-error {
+    color: #b71c1c;
+}
+
+#basemap-select {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #c4c9cf;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.search-container {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 5px;
+}
+
+#map-search {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #cccccc;
+}
+
+#search-btn {
+    padding: 8px 15px;
+    cursor: pointer;
+    background: var(--text-main);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+}
+
+#weeks-input {
+    width: 45px;
+}
+
+.filter-group-top {
+    margin-top: 10px;
+}
+
+.weeks-row-legend {
+    margin-top: 5px;
+}
+
+.legend-color-spaced {
+    margin-left: 10px;
+}
 
 .info-section {
+    margin-top: 15px;
+}
+
+.info-section-comments {
     margin-top: 15px;
 }
 
@@ -76,7 +149,7 @@ header {
     display: block;
     font-size: 0.75em;
     font-weight: bold;
-    color: #555;
+    color: #555555;
     margin-bottom: 3px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -88,100 +161,60 @@ header {
     padding: 10px;
 }
 
-.species-box {
+.species-box,
+.highlight-box,
+.comment-box {
     background: #f1f3f4;
-    padding: 8px;
+    padding: 10px;
+    border: 1px solid #dddddd;
     border-radius: 4px;
-    border: 1px solid #ddd;
+    font-size: 0.9em;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.species-box {
     font-style: italic;
 }
 
-/* SKS-vyn (Orange profil) */
 .sks-border {
-    border-left: 5px solid #e67e22;
-    
+    border-left: 5px solid var(--accent-orange);
     padding: 10px;
 }
 
 .sks-data-grid {
-    display: block; /* Tar bort kolumnerna */
+    display: block;
     font-size: 0.95rem;
 }
 
-.sks-data-grid p {
+.sks-data-grid p,
+.prio-status-box p {
     display: flex;
     justify-content: flex-start;
     margin: 6px 0;
-    
     padding-bottom: 4px;
+    font-size: 0.95rem;
 }
 
-.sks-data-grid p strong {
-    width: 120px; /* Ger alla rubriker samma bredd */
-    flex-shrink: 0; /* Hindrar rubriken från att tryckas ihop */
-    color: #666;
+.sks-data-grid p strong,
+.prio-status-box p strong {
+    width: 120px;
+    flex-shrink: 0;
+    color: var(--text-muted);
     font-size: 0.85rem;
 }
 
-.sks-data-grid span {
+.sks-data-grid span,
+.prio-status-box span {
     font-weight: 500;
-    color: #2c3e50;
-    text-align: left; /* Ändrat från right */
+    color: var(--text-main);
+    text-align: left;
 }
 
-.highlight-box {
-    background: #f1f3f4;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9em;
-    max-height: 200px;
-    overflow-y: auto;
-    white-space: pre-wrap; /* Behåller radbrytningar från Excel */
-}
-
-.highlight-box_1 {
-    background: #fff9c4; /* Ljusgul för uppmärksamhet */
-    padding: 12px;
-    border: 1px dashed #fbc02d;
-    border-radius: 4px;
-    font-weight: 500;
-    color: #333;
-}
-
-.comment-box {
-    background: #f1f3f4;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9em;
-    max-height: 200px;
-    overflow-y: auto;
-    white-space: pre-wrap; /* Behåller radbrytningar från Excel */
-}
-
-.action-button {
-    display: block;
-    text-align: center;
-    background: #2980b9;
-    color: white;
-    padding: 12px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
-    margin-top: 20px;
-    transition: background 0.2s;
-}
-
-.action-button:hover {
-    background: #1f6391;
-}
-
-/* Tvinga fram knappstilen */
 a#btn-open-doc.my-button-class {
-    
-    background-color: #2c3e50 !important;
-    color: white !important;
+    background-color: var(--text-main) !important;
+    color: #ffffff !important;
     padding: 12px !important;
     text-decoration: none !important;
     border-radius: 6px;
@@ -189,36 +222,12 @@ a#btn-open-doc.my-button-class {
     text-align: center;
     margin-top: 20px;
     border: 1px solid #1a252f;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 a#btn-open-doc.my-button-class:hover {
     background-color: #34495e !important;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-/* --- Kontrollpanelen/Legend --- */
-
-.legend-color {
-    width: 12px;
-    height: 12px;
-    display: inline-block;
-    border-radius: 2px;
-    border: 1px solid rgba(0,0,0,0.2);
-}
-
-/* Specifika färger för legenden i sidomenyn */
-.legend-color.blue { background-color: #2980b9; }   /* Ärende */
-.legend-color.purple { background-color: #8e44ad; } /* Egen */
-.legend-color.red { background-color: #e74c3c; }    /* Ny SKS */
-.legend-color.orange { background-color: #e67e22; } /* Gammal SKS */
-
-.submenu {
-    margin-left: 20px;
-    font-size: 0.9em;
-    border-left: 2px solid #ddd;
-    padding-left: 10px;
-    margin-top: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .checkbox-label {
@@ -235,80 +244,58 @@ a#btn-open-doc.my-button-class:hover {
     gap: 10px;
     padding-left: 24px;
     font-size: 0.85em;
-    color: #666;
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
-/* --- LEAFLET MODIFIKATIONER --- */
-.leaflet-container {
-    background: #f0f0f0;
+.submenu {
+    margin-left: 20px;
+    font-size: 0.9em;
+    border-left: 1px solid var(--border-muted);
+    padding-left: 10px;
+    margin-top: 5px;
 }
 
-/* Scrollbar styling för en modernare känsla */
-#info-panel::-webkit-scrollbar { width: 6px; }
-#info-panel::-webkit-scrollbar-track { background: #f1f1f1; }
-#info-panel::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-#info-panel::-webkit-scrollbar-thumb:hover { background: #bbb; }
-
-
-/* Om Master-vyn är synlig, gör rubriken blå */
-#view-master:not([style*="display: none"]) ~ h2#info-title {
-    color: #2c3e50;
+.legend-color {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.25);
 }
 
-/* Om SKS-vyn är synlig, gör rubriken orange */
-#view-sks:not([style*="display: none"]) ~ h2#info-title {
-    color: #e67e22;
-}
+.legend-color.blue { background-color: var(--accent-blue); }
+.legend-color.purple { background-color: var(--accent-purple); }
+.legend-color.red { background-color: #e74c3c; }
+.legend-color.orange { background-color: var(--accent-orange); }
 
 .custom-tooltip {
     background-color: #4b6885 !important;
-    color: white !important;
+    color: #ffffff !important;
     border: none !important;
     border-radius: 4px !important;
     padding: 2px 6px !important;
-    /*font-weight: bold !important;*/
     font-size: 0.75rem !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Ta bort den lilla vita pilen om den stör */
 .custom-tooltip:before {
     display: none;
 }
 
-/* Gör att raderna i Master-vyn ser ut som i SKS-vyn */
-.prio-status-box p {
-    display: flex;
-    justify-content: flex-start;
-    margin: 6px 0;
-    padding-bottom: 4px;
-    font-size: 0.95rem;
+.leaflet-container {
+    background: #f0f0f0;
 }
-
-/* Ger rubrikerna (Dnr, Inkom, Åtgärd) samma bredd så de linjerar */
-.prio-status-box p strong {
-    width: 120px; 
-    flex-shrink: 0;
-    color: #666;
-    font-size: 0.85rem;
-}
-
-.prio-status-box span {
-    font-weight: 500;
-    color: #2c3e50;
-}
-
 
 .map-legend {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.92);
     padding: 10px;
     border-radius: 5px;
-    border: 2px solid rgba(0,0,0,0.2);
-    font-family: Arial, sans-serif;
+    border: 2px solid rgba(0, 0, 0, 0.2);
     line-height: 1.4;
     max-width: 220px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
 }
 
 .legend-header {
@@ -321,11 +308,29 @@ a#btn-open-doc.my-button-class:hover {
 }
 
 .legend-content {
-    display: block; /* Visas som standard */
+    display: block;
 }
 
 .legend-content.minimized {
-    display: none; /* Döljs när vi klickar */
+    display: none;
+}
+
+.legend-divider {
+    margin: 5px 0;
+    border: 0;
+    border-top: 1px solid #eeeeee;
+}
+
+.legend-section-title {
+    font-weight: bold;
+    margin: 8px 0 4px;
+    font-size: 11px;
+    color: #666666;
+    text-transform: uppercase;
+}
+
+.legend-section-title-top {
+    margin-top: 12px;
 }
 
 .legend-item {
@@ -335,11 +340,11 @@ a#btn-open-doc.my-button-class:hover {
     font-size: 12px;
 }
 
-.legend-color {
-    width: 14px;
-    height: 14px;
-    margin-right: 8px;
-    border: 1px solid #999;
+.legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 5px;
 }
 
 .legend-circle {
@@ -350,9 +355,100 @@ a#btn-open-doc.my-button-class:hover {
     display: inline-block;
 }
 
-.submenu {
-    margin-left: 20px; /* Skjuter in rutorna */
-    font-size: 0.9em;
-    border-left: 1px solid #ddd;
-    padding-left: 10px;
+.legend-color-status-egen {
+    background: rgba(142, 68, 173, 0.7);
+    border-color: #8e44ad;
+}
+
+.legend-color-status-arende {
+    background: rgba(52, 152, 219, 0.7);
+    border-color: #2980b9;
+}
+
+.legend-color-sks-new {
+    background: rgba(231, 76, 60, 0.6);
+    border-color: #e6311c;
+}
+
+.legend-color-sks-old {
+    background: rgba(230, 126, 34, 0.6);
+    border-color: #e67e22;
+}
+
+.legend-circle-high { background: #c0392b; }
+.legend-circle-medium { background: #f1c40f; }
+.legend-circle-low { background: #27ae60; }
+.legend-circle-harvested { background: #9e9e9e; }
+
+.legend-circle-protected {
+    background: #1b5e20;
+    border: 2px solid #1b5e20;
+}
+
+.legend-circle-warning {
+    background: #ffffff;
+    border: 3px solid #000000;
+}
+
+.legend-circle-deadline {
+    background: #ffffff;
+    border: 3px solid #808080;
+}
+
+.is-hidden {
+    display: none;
+}
+
+#info-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+#info-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#info-panel::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 10px;
+}
+
+#info-panel::-webkit-scrollbar-thumb:hover {
+    background: #bbbbbb;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid #0b5ed7;
+    outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+    html,
+    body {
+        overflow: auto;
+    }
+
+    #main-container {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100% - 50px);
+    }
+
+    #sidebar {
+        width: 100%;
+        max-height: 42vh;
+        border-right: 0;
+        border-bottom: 1px solid var(--border-muted);
+    }
+
+    #info-panel {
+        max-height: 24vh;
+    }
+
+    #map {
+        min-height: 58vh;
+        height: 58vh;
+    }
 }
