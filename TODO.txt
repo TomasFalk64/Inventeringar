@@ -4,3 +4,5 @@ TODO
 Städa upp kod
 
 skogsstyrelsen API
+
+Lägg krock mellan anmälning eget projekt

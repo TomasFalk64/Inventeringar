@@ -1,6 +1,7 @@
 # Inventeringskarta - Uppsala län
 Detta projekt automatiserar hämtning och visualisering av avverkningsanmälningar från Skogsstyrelsen. Det kombinerar dagsfärsk data med en historisk databas för att säkerställa att inga områden försvinner när de blir äldre än 5 år.
 
+
 ## Arbetsflöde
 1. Uppdatera data (Python)
 Varje gång du vill ha färsk data från Skogsstyrelsen:    ( kommer ersättas av API skogsstyrelsen )
