@@ -30,6 +30,22 @@ Styling: Bestämmer hur ytorna ser ut (t.ex. blå för vanliga, eller grå/strec
 Popups: Kopplar ihop diarienumret (Beteckn) med informationen i filen så att du kan klicka på ett område och se fakta.
 Sök/Filter: Innehåller logik för att bara visa de områden som är relevanta för din inventering.
 
+## Fält/kolumner som läses i script_2.js
+
+Diarienummer (används för nyckling i masterById)
+Typ
+Skede
+Prioritet
+Åtgärd krävs
+Trivialnamn
+Fastighet
+Inkomstdatum
+Juridik
+Nästa steg
+Prioriterade arter
+Övriga kommentarer
+Dokumentlänk
+
 ## 📁 Filstruktur
 ```
 Inventeringar/

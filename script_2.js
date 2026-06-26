@@ -6,7 +6,7 @@ let lastClickedLayer = null;
 let anmalningarData = null;
 let egnaOmradenData = null;
 
-
+//const csvUrl = 'https://docs.google.com/spreadsheets/d/1uD66Kmm-lX2eXthyvq92D28Y8xswimNS7gZqGprHiKg/edit?usp=sharing';
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoJz7Pap7O0UQqtmPWNeZ8M3MmNVkcLC8tkw8PjTufkZkKq-74wH2HuwqcTQfN20be77kNkoy-rrLh/pub?output=csv';
 const filAnmalningar = 'data/uppsala_anmalningar.geojson';
 const filEgna = 'data/egna_omraden.geojson';
